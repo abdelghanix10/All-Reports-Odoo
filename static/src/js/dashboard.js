@@ -14,6 +14,7 @@ export class AllReportsDashboard extends Component {
         sessions: [],
         production: [],
         lost_products: [],
+        debug_logs: [],
       },
       loading: true,
     });

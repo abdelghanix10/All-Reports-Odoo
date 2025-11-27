@@ -11,7 +11,12 @@ class AllReportsDashboard(models.TransientModel):
 
     @api.model
     def get_dashboard_data(self, date_str):
-        _logger.info(f"AllReportsDashboard: get_dashboard_data called with {date_str}")
+        debug_logs = []
+        def log(msg):
+            _logger.info(msg)
+            debug_logs.append(str(msg))
+
+        log(f"AllReportsDashboard: get_dashboard_data called with {date_str}")
         try:
             target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             
@@ -24,21 +29,34 @@ class AllReportsDashboard(models.TransientModel):
             end_of_day_utc = end_of_day_user.astimezone(pytz.UTC).replace(tzinfo=None)
 
             # 1. Sessions
-            sessions = self.env['pos.session'].search([
+            # Use sudo() to ensure we can read all sessions and their orders
+            sessions = self.env['pos.session'].sudo().search([
                 ('start_at', '>=', start_of_day_utc),
                 ('start_at', '<=', end_of_day_utc)
             ])
             
+            log(f"Found {len(sessions)} sessions for date {date_str}")
+
             sessions_data = []
             for session in sessions:
                 try:
+                    log(f"Processing Session: {session.name} (ID: {session.id})")
                     orders = session.order_ids
+                    log(f" - Order Count: {len(orders)}")
+                    
                     category_data = {}
                     
                     for order in orders:
                         for line in order.lines:
-                            cat = line.product_id.pos_categ_id
-                            cat_name = cat.name if cat else 'Uncategorized'
+                            # Fix for pos_categ_id error: Check for pos_categ_ids (Many2many) or pos_categ_id (Many2one)
+                            cat_name = 'Uncategorized'
+                            product = line.product_id
+                            
+                            if 'pos_categ_ids' in product._fields and product.pos_categ_ids:
+                                cat_name = product.pos_categ_ids[0].name
+                            elif 'pos_categ_id' in product._fields and product.pos_categ_id:
+                                cat_name = product.pos_categ_id.name
+
                             if cat_name not in category_data:
                                 category_data[cat_name] = {'name': cat_name, 'products': [], 'total': 0.0}
                             
@@ -90,8 +108,12 @@ class AllReportsDashboard(models.TransientModel):
                     total = 0.0
                     if 'amount_total_incl' in session._fields:
                         total = session.amount_total_incl
-                    else:
+                    
+                    # Fallback to summing orders if total is still 0
+                    if total == 0.0:
                         total = sum(orders.mapped('amount_total'))
+
+                    log(f" - Opening: {opening_balance}, Closing: {closing_balance}, Total: {total}")
 
                     sessions_data.append({
                         'name': session.name,
@@ -110,7 +132,7 @@ class AllReportsDashboard(models.TransientModel):
                         'breakdown': breakdown
                     })
                 except Exception as e:
-                    _logger.error(f"Error processing session {session.id}: {e}", exc_info=True)
+                    log(f"Error processing session {session.id}: {e}")
                     continue
 
             # 2. Production
@@ -150,8 +172,9 @@ class AllReportsDashboard(models.TransientModel):
             return {
                 'sessions': sessions_data,
                 'production': production_data,
-                'lost_products': lost_data
+                'lost_products': lost_data,
+                'debug_logs': debug_logs
             }
         except Exception as e:
-            _logger.error("Error in get_dashboard_data: %s", e, exc_info=True)
+            log(f"Error in get_dashboard_data: {e}")
             raise e
