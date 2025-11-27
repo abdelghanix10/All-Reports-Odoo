@@ -76,9 +76,13 @@ class AllReportsDashboard(models.TransientModel):
                         opening_balance = session.cash_register_balance_start
                     
                     closing_balance = 0.0
+                    # Try 'cash_register_balance_end_real' (Counted) first, then 'cash_register_balance_end' (Computed)
                     if 'cash_register_balance_end_real' in session._fields:
                         closing_balance = session.cash_register_balance_end_real
                     
+                    if closing_balance == 0.0 and 'cash_register_balance_end' in session._fields:
+                         closing_balance = session.cash_register_balance_end
+
                     difference = 0.0
                     if 'cash_register_difference' in session._fields:
                         difference = session.cash_register_difference

@@ -73,6 +73,11 @@
                             <div class="col-md-3"><strong>Closed:</strong> <span t-esc="session.closed_date"/></div>
                             <div class="col-md-3"><strong>Total:</strong> <span t-esc="session.total"/></div>
                         </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3"><strong>Opening Balance:</strong> <span t-esc="session.opening_balance"/></div>
+                            <div class="col-md-3"><strong>Closing Balance:</strong> <span t-esc="session.closing_balance"/></div>
+                            <div class="col-md-3"><strong>Difference:</strong> <span t-esc="session.difference"/></div>
+                        </div>
                         
                         <!-- Breakdown -->
                         <div class="ms-4 mt-2">
