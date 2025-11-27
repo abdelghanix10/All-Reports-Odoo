@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_all_reports_dashboard" model="ir.actions.client">
+        <field name="name">All Reports</field>
+        <field name="tag">all_reports.dashboard</field>
+    </record>
+
+    <menuitem id="menu_all_reports_root"
+              name="All Reports"
+              action="action_all_reports_dashboard"
+              sequence="1"/>
+</odoo>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="all_reports.Dashboard">
+        <div class="o_all_reports_dashboard h-100 d-flex flex-column overflow-auto">
+            <!-- Header -->
+            <div class="p-3 bg-white border-bottom d-flex justify-content-between align-items-center">
+                <h3 class="m-0">All Reports</h3>
+                <div class="d-flex align-items-center">
+                    <label class="me-2 fw-bold">Date:</label>
+                    <input type="date" class="form-control" t-model="state.date" t-on-change="onDateChange"/>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="bg-white border-bottom">
+                <ul class="nav nav-tabs px-3 pt-2">
+                    <li class="nav-item">
+                        <a class="nav-link" t-att-class="{active: state.activeTab === 'dashboard'}" href="#" t-on-click="() => this.setTab('dashboard')">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" t-att-class="{active: state.activeTab === 'sessions'}" href="#" t-on-click="() => this.setTab('sessions')">Sessions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" t-att-class="{active: state.activeTab === 'production'}" href="#" t-on-click="() => this.setTab('production')">Production</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" t-att-class="{active: state.activeTab === 'lost_products'}" href="#" t-on-click="() => this.setTab('lost_products')">Lost Products</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-grow-1 p-3 bg-100">
+                <t t-if="state.loading">
+                    <div class="d-flex justify-content-center align-items-center h-100">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </t>
+                <t t-else="">
+                    <div t-if="state.activeTab === 'dashboard'" class="d-flex flex-column gap-4">
+                        <t t-call="all_reports.SessionsTable"/>
+                        <t t-call="all_reports.ProductionTable"/>
+                        <t t-call="all_reports.LostProductsTable"/>
+                    </div>
+                    <div t-if="state.activeTab === 'sessions'">
+                        <t t-call="all_reports.SessionsTable"/>
+                    </div>
+                    <div t-if="state.activeTab === 'production'">
+                        <t t-call="all_reports.ProductionTable"/>
+                    </div>
+                    <div t-if="state.activeTab === 'lost_products'">
+                        <t t-call="all_reports.LostProductsTable"/>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="all_reports.SessionsTable">
+        <div class="card">
+            <div class="card-header fw-bold">Sessions</div>
+            <div class="card-body p-0">
+                <t t-foreach="state.data.sessions" t-as="session" t-key="session.id">
+                    <div class="border-bottom p-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <h5 t-esc="session.name"/>
+                            <span class="badge bg-info" t-esc="session.status"/>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-3"><strong>Opened:</strong> <span t-esc="session.opened_date"/></div>
+                            <div class="col-md-3"><strong>Closed:</strong> <span t-esc="session.closed_date"/></div>
+                            <div class="col-md-3"><strong>Total:</strong> <span t-esc="session.total"/></div>
+                        </div>
+                        
+                        <!-- Breakdown -->
+                        <div class="ms-4 mt-2">
+                            <h6 class="text-muted">Sales Breakdown</h6>
+                            <t t-foreach="session.breakdown" t-as="cat" t-key="cat.name">
+                                <div class="mb-2">
+                                    <div class="fw-bold text-primary" t-esc="cat.name"/>
+                                    <table class="table table-sm table-borderless mb-1">
+                                        <tbody>
+                                            <tr t-foreach="cat.products" t-as="prod" t-key="prod.name">
+                                                <td t-esc="prod.name"/>
+                                                <td class="text-end" t-esc="prod.qty"/>
+                                                <td class="text-end" t-esc="prod.amount"/>
+                                            </tr>
+                                            <tr class="border-top">
+                                                <td colspan="2" class="text-end fw-bold">Subtotal:</td>
+                                                <td class="text-end fw-bold" t-esc="cat.total"/>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+                <t t-if="state.data.sessions.length === 0">
+                    <div class="p-3 text-center text-muted">No sessions found.</div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="all_reports.ProductionTable">
+        <div class="card">
+            <div class="card-header fw-bold">Production</div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-end">Quantity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="state.data.production" t-as="move" t-key="move_index">
+                            <td t-esc="move.product_name"/>
+                            <td class="text-end" t-esc="move.quantity"/>
+                            <td t-esc="move.status"/>
+                        </tr>
+                        <tr t-if="state.data.production.length === 0">
+                            <td colspan="3" class="text-center text-muted">No production records found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="all_reports.LostProductsTable">
+        <div class="card">
+            <div class="card-header fw-bold">Lost Products</div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-end">Quantity</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="state.data.lost_products" t-as="move" t-key="move_index">
+                            <td t-esc="move.product_name"/>
+                            <td class="text-end" t-esc="move.quantity"/>
+                            <td t-esc="move.status"/>
+                        </tr>
+                        <tr t-if="state.data.lost_products.length === 0">
+                            <td colspan="3" class="text-center text-muted">No lost products found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </t>
+</templates>
