@@ -13,6 +13,7 @@ export class AllReportsDashboard extends Component {
       data: {
         sessions: [],
         production: [],
+        production_vs_sales: [],
         lost_products: [],
         debug_logs: [],
       },

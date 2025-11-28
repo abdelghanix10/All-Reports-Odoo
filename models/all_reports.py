@@ -38,6 +38,8 @@ class AllReportsDashboard(models.TransientModel):
             log(f"Found {len(sessions)} sessions for date {date_str}")
 
             sessions_data = []
+            sales_agg = {}
+
             for session in sessions:
                 try:
                     log(f"Processing Session: {session.name} (ID: {session.id})")
@@ -51,6 +53,12 @@ class AllReportsDashboard(models.TransientModel):
                             # Fix for pos_categ_id error: Check for pos_categ_ids (Many2many) or pos_categ_id (Many2one)
                             cat_name = 'Uncategorized'
                             product = line.product_id
+                            
+                            # Update sales aggregation for Production vs Sales table
+                            p_display_name = product.display_name
+                            if p_display_name not in sales_agg:
+                                sales_agg[p_display_name] = 0.0
+                            sales_agg[p_display_name] += line.qty
                             
                             if 'pos_categ_ids' in product._fields and product.pos_categ_ids:
                                 cat_name = product.pos_categ_ids[0].name
@@ -159,6 +167,18 @@ class AllReportsDashboard(models.TransientModel):
                     'status': data['status']
                 })
 
+            # Production vs Sales Comparison
+            production_vs_sales = []
+            for name, data in production_agg.items():
+                produced = data['quantity']
+                sold = sales_agg.get(name, 0.0)
+                production_vs_sales.append({
+                    'product_name': name,
+                    'produced_qty': produced,
+                    'sales_qty': sold,
+                    'difference': produced - sold
+                })
+
             # 3. Lost Products
             lost_moves = self.env['stock.move'].search([
                 ('state', '=', 'done'),
@@ -186,6 +206,7 @@ class AllReportsDashboard(models.TransientModel):
             return {
                 'sessions': sessions_data,
                 'production': production_data,
+                'production_vs_sales': production_vs_sales,
                 'lost_products': lost_data,
                 'debug_logs': debug_logs
             }

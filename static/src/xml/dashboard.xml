@@ -170,28 +170,59 @@
     </t>
 
     <t t-name="all_reports.LostProductsTable">
-        <div class="card">
-            <div class="card-header fw-bold">Lost Products</div>
-            <div class="card-body p-0">
-                <table class="table table-striped mb-0">
-                    <thead>
-                        <tr>
-                            <th>Product</th>
-                            <th class="text-end">Quantity</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr t-foreach="state.data.lost_products" t-as="move" t-key="move_index">
-                            <td t-esc="move.product_name"/>
-                            <td class="text-end" t-esc="move.quantity"/>
-                            <td t-esc="move.status"/>
-                        </tr>
-                        <tr t-if="state.data.lost_products.length === 0">
-                            <td colspan="3" class="text-center text-muted">No lost products found.</td>
-                        </tr>
-                    </tbody>
-                </table>
+        <div class="d-flex flex-column gap-4">
+            <!-- Production vs Sales Table -->
+            <div class="card">
+                <div class="card-header fw-bold">Production vs Sales</div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Production Product</th>
+                                <th class="text-end">Quantity (Produced)</th>
+                                <th class="text-end">Sales Quantity</th>
+                                <th class="text-end">Difference</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="state.data.production_vs_sales" t-as="row" t-key="row_index">
+                                <td t-esc="row.product_name"/>
+                                <td class="text-end" t-esc="row.produced_qty"/>
+                                <td class="text-end" t-esc="row.sales_qty"/>
+                                <td class="text-end" t-att-class="row.difference &lt; 0 ? 'text-danger' : 'text-success'" t-esc="row.difference"/>
+                            </tr>
+                            <tr t-if="state.data.production_vs_sales.length === 0">
+                                <td colspan="4" class="text-center text-muted">No production records found for comparison.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Lost Products Table -->
+            <div class="card">
+                <div class="card-header fw-bold">Lost Products</div>
+                <div class="card-body p-0">
+                    <table class="table table-striped mb-0">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th class="text-end">Quantity</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="state.data.lost_products" t-as="move" t-key="move_index">
+                                <td t-esc="move.product_name"/>
+                                <td class="text-end" t-esc="move.quantity"/>
+                                <td t-esc="move.status"/>
+                            </tr>
+                            <tr t-if="state.data.lost_products.length === 0">
+                                <td colspan="3" class="text-center text-muted">No lost products found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </t>
