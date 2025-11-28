@@ -11,12 +11,7 @@ class AllReportsDashboard(models.TransientModel):
 
     @api.model
     def get_dashboard_data(self, date_str):
-        debug_logs = []
-        def log(msg):
-            _logger.info(msg)
-            debug_logs.append(str(msg))
-
-        log(f"AllReportsDashboard: get_dashboard_data called with {date_str}")
+        _logger.info(f"AllReportsDashboard: get_dashboard_data called with {date_str}")
         try:
             target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
             
@@ -35,16 +30,16 @@ class AllReportsDashboard(models.TransientModel):
                 ('start_at', '<=', end_of_day_utc)
             ])
             
-            log(f"Found {len(sessions)} sessions for date {date_str}")
+            _logger.info(f"Found {len(sessions)} sessions for date {date_str}")
 
             sessions_data = []
             sales_agg = {}
 
             for session in sessions:
                 try:
-                    log(f"Processing Session: {session.name} (ID: {session.id})")
+                    _logger.info(f"Processing Session: {session.name} (ID: {session.id})")
                     orders = session.order_ids
-                    log(f" - Order Count: {len(orders)}")
+                    _logger.info(f" - Order Count: {len(orders)}")
                     
                     category_data = {}
                     
@@ -121,7 +116,7 @@ class AllReportsDashboard(models.TransientModel):
                     if total == 0.0:
                         total = sum(orders.mapped('amount_total'))
 
-                    log(f" - Opening: {opening_balance}, Closing: {closing_balance}, Total: {total}")
+                    _logger.info(f" - Opening: {opening_balance}, Closing: {closing_balance}, Total: {total}")
 
                     sessions_data.append({
                         'name': session.name,
@@ -140,7 +135,7 @@ class AllReportsDashboard(models.TransientModel):
                         'breakdown': breakdown
                     })
                 except Exception as e:
-                    log(f"Error processing session {session.id}: {e}")
+                    _logger.error(f"Error processing session {session.id}: {e}")
                     continue
 
             # 2. Production
@@ -212,9 +207,8 @@ class AllReportsDashboard(models.TransientModel):
                 'sessions': sessions_data,
                 'production': production_data,
                 'production_vs_sales': production_vs_sales,
-                'lost_products': lost_data,
-                'debug_logs': debug_logs
+                'lost_products': lost_data
             }
         except Exception as e:
-            log(f"Error in get_dashboard_data: {e}")
+            _logger.error(f"Error in get_dashboard_data: {e}")
             raise e

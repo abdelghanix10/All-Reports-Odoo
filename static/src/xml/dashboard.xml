@@ -53,16 +53,6 @@
                     <div t-if="state.activeTab === 'lost_products'">
                         <t t-call="all_reports.LostProductsTable"/>
                     </div>
-                    
-                    <!-- Debug Logs Section -->
-                    <div class="mt-4 p-3 bg-light border rounded">
-                        <h6 class="text-muted">Debug Logs</h6>
-                        <pre style="max-height: 200px; overflow-y: auto; font-size: 0.8rem;">
-                            <t t-foreach="state.data.debug_logs" t-as="log" t-key="log_index">
-                                <div t-esc="log"/>
-                            </t>
-                        </pre>
-                    </div>
                 </t>
             </div>
         </div>

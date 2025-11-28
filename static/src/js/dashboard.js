@@ -15,7 +15,6 @@ export class AllReportsDashboard extends Component {
         production: [],
         production_vs_sales: [],
         lost_products: [],
-        debug_logs: [],
       },
       loading: true,
       sessionsPage: 1,
