@@ -144,12 +144,19 @@ class AllReportsDashboard(models.TransientModel):
                 ('date', '<=', end_of_day_utc)
             ])
             
-            production_data = []
+            production_agg = {}
             for move in production_moves:
+                name = move.product_id.display_name
+                if name not in production_agg:
+                    production_agg[name] = {'quantity': 0.0, 'status': move.state}
+                production_agg[name]['quantity'] += move.quantity
+
+            production_data = []
+            for name, data in production_agg.items():
                 production_data.append({
-                    'product_name': move.product_id.display_name,
-                    'quantity': move.quantity,
-                    'status': move.state
+                    'product_name': name,
+                    'quantity': data['quantity'],
+                    'status': data['status']
                 })
 
             # 3. Lost Products
@@ -161,12 +168,19 @@ class AllReportsDashboard(models.TransientModel):
                 ('date', '<=', end_of_day_utc)
             ])
             
-            lost_data = []
+            lost_agg = {}
             for move in lost_moves:
+                name = move.product_id.display_name
+                if name not in lost_agg:
+                    lost_agg[name] = {'quantity': 0.0, 'status': move.state}
+                lost_agg[name]['quantity'] += move.quantity
+
+            lost_data = []
+            for name, data in lost_agg.items():
                 lost_data.append({
-                    'product_name': move.product_id.display_name,
-                    'quantity': move.quantity,
-                    'status': move.state
+                    'product_name': name,
+                    'quantity': data['quantity'],
+                    'status': data['status']
                 })
 
             return {
