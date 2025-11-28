@@ -194,8 +194,10 @@ class AllReportsDashboard(models.TransientModel):
                 if name not in lost_agg:
                     lost_agg[name] = {'quantity': 0.0, 'status': move.state, 'total_value': 0.0}
                 lost_agg[name]['quantity'] += move.quantity
-                # Calculate value: quantity * cost price
-                lost_agg[name]['total_value'] += move.quantity * move.product_id.standard_price
+                # Calculate value: quantity * sales price (lst_price)
+                # Using lst_price because standard_price (Cost) is often 0 in simple POS setups
+                price = move.product_id.lst_price
+                lost_agg[name]['total_value'] += move.quantity * price
 
             lost_data = []
             for name, data in lost_agg.items():
