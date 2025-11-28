@@ -1,4 +1,4 @@
-"# All Reports Odoo Module
+# All Reports Odoo Module
 
 **All Reports** is a custom Odoo 18 module that provides a consolidated dashboard for monitoring Point of Sale (POS) sessions, Manufacturing (Production), and Inventory Losses for a specific date.
 
