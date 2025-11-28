@@ -164,7 +164,7 @@ class AllReportsDashboard(models.TransientModel):
                 production_data.append({
                     'product_name': name,
                     'quantity': data['quantity'],
-                    'status': data['status']
+                    'status': data['status'].capitalize()
                 })
 
             # Production vs Sales Comparison
@@ -192,15 +192,18 @@ class AllReportsDashboard(models.TransientModel):
             for move in lost_moves:
                 name = move.product_id.display_name
                 if name not in lost_agg:
-                    lost_agg[name] = {'quantity': 0.0, 'status': move.state}
+                    lost_agg[name] = {'quantity': 0.0, 'status': move.state, 'total_value': 0.0}
                 lost_agg[name]['quantity'] += move.quantity
+                # Calculate value: quantity * cost price
+                lost_agg[name]['total_value'] += move.quantity * move.product_id.standard_price
 
             lost_data = []
             for name, data in lost_agg.items():
                 lost_data.append({
                     'product_name': name,
                     'quantity': data['quantity'],
-                    'status': data['status']
+                    'status': data['status'].capitalize(),
+                    'total_value': data['total_value']
                 })
 
             return {
