@@ -119,7 +119,7 @@ class AllReportsDashboard(models.TransientModel):
                     _logger.info(f" - Opening: {opening_balance}, Closing: {closing_balance}, Total: {total}")
 
                     sessions_data.append({
-                        'name': session.name,
+                        'name': f"{session.config_id.name} - {session.name}",
                         'id': session.id,
                         'opened_date': session.start_at,
                         'closed_date': session.stop_at,
