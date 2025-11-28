@@ -17,6 +17,9 @@ export class AllReportsDashboard extends Component {
         debug_logs: [],
       },
       loading: true,
+      sessionsPage: 1,
+      sessionsPerPage: 5,
+      expandedSessions: {},
     });
 
     onWillStart(async () => {
@@ -26,6 +29,10 @@ export class AllReportsDashboard extends Component {
 
   async fetchData() {
     this.state.loading = true;
+    // Reset pagination on new data fetch
+    this.state.sessionsPage = 1;
+    this.state.expandedSessions = {};
+
     try {
       const result = await this.orm.call(
         "all_reports.dashboard",
@@ -47,6 +54,51 @@ export class AllReportsDashboard extends Component {
 
   setTab(tab) {
     this.state.activeTab = tab;
+  }
+
+  // Pagination Helpers
+  get paginatedSessions() {
+    const start = (this.state.sessionsPage - 1) * this.state.sessionsPerPage;
+    const end = start + this.state.sessionsPerPage;
+    return this.state.data.sessions.slice(start, end);
+  }
+
+  get totalSessionPages() {
+    return Math.ceil(
+      this.state.data.sessions.length / this.state.sessionsPerPage
+    );
+  }
+
+  nextPage() {
+    if (this.state.sessionsPage < this.totalSessionPages) {
+      this.state.sessionsPage++;
+    }
+  }
+
+  prevPage() {
+    if (this.state.sessionsPage > 1) {
+      this.state.sessionsPage--;
+    }
+  }
+
+  // Accordion Helper
+  toggleSession(sessionId) {
+    if (this.state.expandedSessions[sessionId]) {
+      delete this.state.expandedSessions[sessionId];
+    } else {
+      this.state.expandedSessions[sessionId] = true;
+    }
+  }
+
+  // Formatting Helper
+  formatCurrency(amount) {
+    if (amount === undefined || amount === null) return "0.00 DH";
+    return (
+      amount.toLocaleString("en-US", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }) + " DH"
+    );
   }
 }
 
