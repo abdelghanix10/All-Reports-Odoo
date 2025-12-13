@@ -1,6 +1,7 @@
 {
     'name': 'All Reports',
     'version': '1.0',
+    'odoo': '19.0',
     'category': 'Reporting',
     'summary': 'Consolidated Dashboard for POS, Production, and Inventory Loss',
     'depends': ['base', 'point_of_sale', 'mrp', 'stock', 'web'],
