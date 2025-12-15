@@ -8,5 +8,6 @@
     <menuitem id="menu_all_reports_root"
               name="All Reports"
               action="action_all_reports_dashboard"
-              sequence="1"/>
+              sequence="1"
+              groups="all_reports.group_all_reports_user"/>
 </odoo>

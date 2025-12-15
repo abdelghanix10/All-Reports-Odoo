@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_users_form_all_reports" model="ir.ui.view">
+        <field name="name">res.users.form.all.reports</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="All Reports Settings">
+                    <group>
+                        <field name="access_all_reports"/>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>
