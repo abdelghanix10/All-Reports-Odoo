@@ -54,6 +54,20 @@ class AllReportsDashboard(models.TransientModel):
                             if p_display_name not in sales_agg:
                                 sales_agg[p_display_name] = 0.0
                             sales_agg[p_display_name] += line.qty
+
+                             # Check for BOM and add component quantities
+                            bom = self.env['mrp.bom'].search([
+                                ('product_id', '=', product.id),
+                                ('product_tmpl_id', '=', product.product_tmpl_id.id)
+                            ], limit=1)
+                            if bom:
+                                for bom_line in bom.bom_line_ids:
+                                    comp_product = bom_line.product_id
+                                    comp_qty = bom_line.product_qty * line.qty
+                                    comp_name = comp_product.display_name
+                                    if comp_name not in sales_agg:
+                                        sales_agg[comp_name] = 0.0
+                                    sales_agg[comp_name] += comp_qty
                             
                             if 'pos_categ_ids' in product._fields and product.pos_categ_ids:
                                 cat_name = product.pos_categ_ids[0].name
