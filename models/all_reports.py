@@ -24,11 +24,25 @@ class AllReportsDashboard(models.TransientModel):
             end_of_day_utc = end_of_day_user.astimezone(pytz.UTC).replace(tzinfo=None)
 
             # 1. Sessions
+            # Filter sessions by their closing date (stop_at)
+            # For sessions still open (stop_at = False), show them on today's date
             # Use sudo() to ensure we can read all sessions and their orders
+            
+            today = datetime.now().date()
+            is_today = (target_date == today)
+            
+            # Get sessions closed on the selected date
             sessions = self.env['pos.session'].sudo().search([
-                ('start_at', '>=', start_of_day_utc),
-                ('start_at', '<=', end_of_day_utc)
+                ('stop_at', '>=', start_of_day_utc),
+                ('stop_at', '<=', end_of_day_utc)
             ])
+            
+            # If selected date is today, also include open sessions (stop_at = False)
+            if is_today:
+                open_sessions = self.env['pos.session'].sudo().search([
+                    ('stop_at', '=', False)
+                ])
+                sessions = sessions | open_sessions
             
             _logger.info(f"Found {len(sessions)} sessions for date {date_str}")
 
