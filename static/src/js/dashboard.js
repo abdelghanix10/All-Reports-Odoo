@@ -7,8 +7,10 @@ import { useService } from "@web/core/utils/hooks";
 export class AllReportsDashboard extends Component {
   setup() {
     this.orm = useService("orm");
+    const today = new Date().toISOString().split("T")[0];
     this.state = useState({
-      date: new Date().toISOString().split("T")[0],
+      startDate: today,
+      endDate: today,
       activeTab: "dashboard",
       data: {
         sessions: [],
@@ -37,7 +39,7 @@ export class AllReportsDashboard extends Component {
       const result = await this.orm.call(
         "all_reports.dashboard",
         "get_dashboard_data",
-        [this.state.date]
+        [this.state.startDate, this.state.endDate]
       );
       this.state.data = result;
     } catch (e) {
@@ -47,8 +49,21 @@ export class AllReportsDashboard extends Component {
     }
   }
 
-  async onDateChange(ev) {
-    this.state.date = ev.target.value;
+  async onStartDateChange(ev) {
+    this.state.startDate = ev.target.value;
+    // Ensure endDate is not before startDate
+    if (this.state.endDate < this.state.startDate) {
+      this.state.endDate = this.state.startDate;
+    }
+    await this.fetchData();
+  }
+
+  async onEndDateChange(ev) {
+    this.state.endDate = ev.target.value;
+    // Ensure startDate is not after endDate
+    if (this.state.startDate > this.state.endDate) {
+      this.state.startDate = this.state.endDate;
+    }
     await this.fetchData();
   }
 

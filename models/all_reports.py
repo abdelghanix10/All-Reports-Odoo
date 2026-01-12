@@ -10,41 +10,42 @@ class AllReportsDashboard(models.TransientModel):
     _description = 'All Reports Dashboard Logic'
 
     @api.model
-    def get_dashboard_data(self, date_str):
-        _logger.info(f"AllReportsDashboard: get_dashboard_data called with {date_str}")
+    def get_dashboard_data(self, start_date_str, end_date_str):
+        _logger.info(f"AllReportsDashboard: get_dashboard_data called with {start_date_str} to {end_date_str}")
         try:
-            target_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
             
             user_tz = pytz.timezone(self.env.user.tz or 'UTC')
             
-            start_of_day_user = user_tz.localize(datetime.combine(target_date, time.min))
-            end_of_day_user = user_tz.localize(datetime.combine(target_date, time.max))
+            start_of_range_user = user_tz.localize(datetime.combine(start_date, time.min))
+            end_of_range_user = user_tz.localize(datetime.combine(end_date, time.max))
             
-            start_of_day_utc = start_of_day_user.astimezone(pytz.UTC).replace(tzinfo=None)
-            end_of_day_utc = end_of_day_user.astimezone(pytz.UTC).replace(tzinfo=None)
+            start_of_day_utc = start_of_range_user.astimezone(pytz.UTC).replace(tzinfo=None)
+            end_of_day_utc = end_of_range_user.astimezone(pytz.UTC).replace(tzinfo=None)
 
             # 1. Sessions
             # Filter sessions by their closing date (stop_at)
-            # For sessions still open (stop_at = False), show them on today's date
+            # For sessions still open (stop_at = False), show them if today is in the date range
             # Use sudo() to ensure we can read all sessions and their orders
             
             today = datetime.now().date()
-            is_today = (target_date == today)
+            today_in_range = (start_date <= today <= end_date)
             
-            # Get sessions closed on the selected date
+            # Get sessions closed within the selected date range
             sessions = self.env['pos.session'].sudo().search([
                 ('stop_at', '>=', start_of_day_utc),
                 ('stop_at', '<=', end_of_day_utc)
             ])
             
-            # If selected date is today, also include open sessions (stop_at = False)
-            if is_today:
+            # If today is in the date range, also include open sessions (stop_at = False)
+            if today_in_range:
                 open_sessions = self.env['pos.session'].sudo().search([
                     ('stop_at', '=', False)
                 ])
                 sessions = sessions | open_sessions
             
-            _logger.info(f"Found {len(sessions)} sessions for date {date_str}")
+            _logger.info(f"Found {len(sessions)} sessions for date range {start_date_str} to {end_date_str}")
 
             sessions_data = []
             sales_agg = {}
