@@ -39,7 +39,12 @@ export class AllReportsDashboard extends Component {
       const result = await this.orm.call(
         "all_reports.dashboard",
         "get_dashboard_data",
-        [this.state.startDate, this.state.endDate]
+        [this.state.startDate, this.state.endDate],
+      );
+      // Filter sessions
+      result.sessions = result.sessions.filter(
+        (s) =>
+          (s.total !== 0 || !s.closed_date) && s.status !== "opening_control",
       );
       this.state.data = result;
     } catch (e) {
@@ -80,7 +85,7 @@ export class AllReportsDashboard extends Component {
 
   get totalSessionPages() {
     return Math.ceil(
-      this.state.data.sessions.length / this.state.sessionsPerPage
+      this.state.data.sessions.length / this.state.sessionsPerPage,
     );
   }
 
